@@ -1,36 +1,70 @@
-import { useState } from "react";
 import { DatePicker } from "antd";
-import moment from "moment";
+import { Fragment, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import dayjs from "dayjs";
 
-const { RangePicker } = DatePicker;
+const RHFDatePicker = (props) => {
+  return (
+    <Controller
+      control={props.control}
+      name={props.name}
+      rules={{
+        required: "This field is required",
+      }}
+      render={({ field, fieldState }) => {
+        return (
+          <Fragment>
+            <DatePicker
+              placeholder={props.placeholder}
+              status={fieldState.error ? "error" : null}
+              ref={field.ref}
+              name={field.name}
+              onBlur={field.onBlur}
+              value={field.value ? dayjs(field.value) : null}
+              onChange={(date) => {
+                field.onChange(date ? date.valueOf() : null);
+              }}
+            />
+            <br />
+            <span style={{ color: "red" }}>
+              {fieldState.error && fieldState.error.message}
+            </span>
+          </Fragment>
+        );
+      }}
+    />
+  );
+};
 
 const App = () => {
-  console.log('Component Rendered!!!');
-  const [singelDates, setSingleDates] = useState();
-  const [rangeDates, setRangeDates] = useState([]);
-  console.log('singelDates', singelDates);
-  console.log('rangeDates', rangeDates);
+  const { handleSubmit, control, watch } = useForm();
   return (
-    <div>
-      <div style={{ margin: "20px" }}>
-        <DatePicker
-          onChange={(value) => {
-            const getValue = moment(value).format('DD-MM-YYYY')
-            setSingleDates(getValue);
-          }}
+    <form
+      onSubmit={handleSubmit((data) => {
+        console.log("data", data);
+      })}
+    >
+      <div>
+        {
+            // <span>{JSON.stringify(watch("startDate"))}</span>
+        }
+        <br />
+        <RHFDatePicker
+          control={control}
+          name="startDate"
+          placeholder="Start Date"
+        />
+        <br />
+        <RHFDatePicker
+          control={control}
+          name="endDate"
+          placeholder="End Date"
         />
       </div>
-      <div style={{ margin: "20px" }}>
-        <RangePicker
-          onChange={(value) => {
-            setRangeDates(value.map((item) => {
-              return moment(item).format('DD-MM-YYYY');
-            }));
-          }}
-        />
-      </div>
-    </div>
-  )
-}
+      <br />
+      <button>Submit</button>
+    </form>
+  );
+};
 
 export default App;
